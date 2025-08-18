@@ -4,6 +4,7 @@ import json
 
 sys.path.append(os.getcwd())
 
+from concurrent.futures import ThreadPoolExecutor, TimeoutError
 from crawler.paper import HuggingFacePaperScraper
 from crawler.gh_trending import GithubTrendingScraper
 from mail.sender import EmailSender
@@ -18,17 +19,28 @@ def crawling():
     gh_scraper = GithubTrendingScraper()
     print("Start Scraping")
 
+    # 运行 paper_scraper，不需要超时控制
     try:
         print("Start Scraping for Papers")
         paper_scraper.run()
     except Exception as e:
-        print(f"Error, {e} in Papers fetching, skipping")
+        print(f"Error: {e} in Papers fetching, skipping")
 
-    try:
-        print("Start Scraping for Github Trendings")
-        gh_scraper.run()
-    except Exception as e:
-        print(f"Error: {e} in Github Trendings, skipping")
+    # 使用 ThreadPoolExecutor 控制 gh_scraper 的超时
+    print("Start Scraping for Github Trendings with timeout")
+    # 设置超时时间为 300 秒 (5 分钟)
+    TIMEOUT_SECONDS = 600
+    with ThreadPoolExecutor(max_workers=1) as executor:
+        future = executor.submit(gh_scraper.run)
+        try:
+            # 等待 future 完成，最多等待 TIMEOUT_SECONDS 秒
+            future.result(timeout=TIMEOUT_SECONDS)
+            print("Github Trendings scraping finished successfully.")
+        except TimeoutError:
+            print(f"Error: Github Trendings scraping timed out after {TIMEOUT_SECONDS} seconds.")
+            print("Skipping this task.")
+        except Exception as e:
+            print(f"Error: {e} in Github Trendings, skipping")
 
     print("Finish Scraping")
 

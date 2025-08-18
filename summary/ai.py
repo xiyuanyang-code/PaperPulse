@@ -24,12 +24,12 @@ class AISummarizer:
         self.time = datetime.now().strftime("%Y%m%d")
         self.data_file_path = os.path.join("./materials", (self.time + ".json"))
         self.client = OpenAI(
-            api_key=os.environ.get("ANTHROPIC_API_KEY"),
-            base_url=os.environ.get("ANTHROPIC_BASE_URL"),
+            api_key=os.environ.get("OPENAI_API_KEY"),
+            base_url=os.environ.get("BASE_URL"),
         )
         if not self.client.api_key:
             raise ValueError(
-                "ANTHROPIC_API_KEY environment variable not set. Please set your key first."
+                "OPENAI_API_KEY environment variable not set. Please set your key first."
             )
 
     def _load_data(self):
@@ -45,7 +45,7 @@ class AISummarizer:
         except json.JSONDecodeError:
             raise ValueError("File content is not a valid JSON format.")
 
-    def _get_summary_from_anthropic(self, text, length_limit=400):
+    def _get_summary_from_OPENAI(self, text, length_limit=400):
         """
         Generates a text summary using the OpenAI API.
 
@@ -93,7 +93,7 @@ class AISummarizer:
         for paper in papers:
             title = paper.get("Title", "Untitled").strip()
             summary_text = paper.get("Summary", "No summary information.")
-            summary = self._get_summary_from_anthropic(summary_text)
+            summary = self._get_summary_from_OPENAI(summary_text)
             reports.append(f"{title}\n\n{summary}")
 
         # Summarize GitHub projects
@@ -101,7 +101,7 @@ class AISummarizer:
             repo_url = repo.get("url", "No URL").strip()
             # Summarize combining description and README information
             full_text = f"Project Description: {repo.get('description', '')}\n\nREADME Summary: {repo.get('readme_summary', '')}"
-            summary = self._get_summary_from_anthropic(full_text)
+            summary = self._get_summary_from_OPENAI(full_text)
             reports.append(f"{repo_url}\n\n{summary}")
 
         self.final_report = reports
