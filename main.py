@@ -10,6 +10,8 @@ from mail.sender import EmailSender
 from summary.ai import AISummarizer
 from datetime import datetime
 
+time_stamp = datetime.now().strftime("%Y%m%d")
+
 
 def crawling():
     paper_scraper = HuggingFacePaperScraper()
@@ -44,28 +46,63 @@ def _finish_report():
     with open(f"./materials/{time_stamp}.json", encoding="utf-8") as file:
         data = json.load(file)
         body_text = data["L1 Summary"]
+        file.close()
+
+    # generate a markdown file
+    with open(f"./materials/{time_stamp}.md", "w", encoding="utf-8") as file:
+        file.write(f"# Welcome to {time_stamp} AI Report\n\n")
+        file.write(f"{body_text}\n\n")
+        file.write(f"## Introduction\n\n")
+        summary = data["L2 Summary"]
+        for content in summary:
+            file.write(f"{content}\n\n\n")
+
+        file.write(f"## Repo Trendings\n\n")
+        data_gh = data["gh_trendings"]
+        for content in data_gh:
+            file.write(f"### Repo: {content["url"][19:]}\n\n")
+            file.write(f"url: {content["url"]}\n")
+            file.write(f"language: {content["language"]}\n")
+            file.write(f"\n{content["description"]}\n")
+
+        file.write(f"## Paper Trendings\n\n")
+        data_paper = data["huggingface_papers"]
+        for content in data_paper:
+            file.write(f"### Paper: {content["Title"]}\n\n")
+            file.write(f"url: {content["PDF_Link"]}\n")
+            file.write(f"\n{content["Summary"]}\n")
+
+        return body_text, f"./materials/{time_stamp}.md"
 
 
-def _send_mail():
+def _send_mail(body, path):
     mail_sender = EmailSender()
-    mail_sender.send_mail("xiyuan__yang@outlook.com")
+    email_list = ["xiyuan__yang@outlook.com", "ruanmowen@sjtu.edu.cn"]
+    for email in email_list:
+        mail_sender.send_mail(
+            email,
+            subject=f"AI Trending {time_stamp}",
+            body=body,
+            attach_local_file_path=path,
+        )
 
 
 def main():
-    time_stamp = datetime.now().strftime("%Y%m%d")
-    os.makedirs("./materials", exist_ok=True)
-    file_path = os.path.abspath(f"./materials/{time_stamp}.json")
-    with open(file_path, "w") as file:
-        # create the new file
-        json.dump({}, file)
-        file.close()
 
-    print("Email Preparation Start!")
-    crawling()
-    _get_ai_info()
-    _finish_report()
-    _send_mail()
+    os.makedirs("./materials", exist_ok=True)
+    # file_path = os.path.abspath(f"./materials/{time_stamp}.json")
+    # with open(file_path, "w") as file:
+    #     # create the new file
+    #     json.dump({}, file)
+    #     file.close()
+
+    # print("Email Preparation Start!")
+    # crawling()
+    # _get_ai_info()
+    body, path = _finish_report()
+    _send_mail(body, path)
 
 
 if __name__ == "__main__":
     main()
+    # _finish_report()

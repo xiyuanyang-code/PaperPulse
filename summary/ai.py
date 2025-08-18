@@ -57,7 +57,7 @@ class AISummarizer:
         system_prompt = "You are a professional content summarization robot. Please summarize the text provided by the user in Chinese."
 
         # Build user prompt
-        user_prompt = f"Please summarize the following content in Chinese, with the number of words limited to {length_limit} words:\n\n---\n\n{clean_text}, you only need to output the final answer."
+        user_prompt = f"Please summarize the following content in Chinese, with the number of words limited to {length_limit} words:\n\n---\n\n{clean_text}, you only need to output the final answer.输出的最终结果不允许包含任何的markdown的小标题标记，包括加粗等，全部以自然段的形式呈现"
 
         try:
             response = self.client.chat.completions.create(
@@ -91,7 +91,7 @@ class AISummarizer:
             title = paper.get("Title", "Untitled").strip()
             summary_text = paper.get("Summary", "No summary information.")
             summary = self._get_summary_from_anthropic(summary_text)
-            reports.append(f"### Paper Summary: {title}\n\n{summary}")
+            reports.append(f"{title}\n\n{summary}")
 
         # Summarize GitHub projects
         for repo in repos:
@@ -99,7 +99,7 @@ class AISummarizer:
             # Summarize combining description and README information
             full_text = f"Project Description: {repo.get('description', '')}\n\nREADME Summary: {repo.get('readme_summary', '')}"
             summary = self._get_summary_from_anthropic(full_text)
-            reports.append(f"### GitHub Project Summary: {repo_url}\n\n{summary}")
+            reports.append(f"{repo_url}\n\n{summary}")
 
         self.final_report = reports
 
@@ -109,7 +109,7 @@ class AISummarizer:
         system_prompt = "You are a professional content summarization robot. Please summarize the text provided by the user in Chinese."
 
         # Build user prompt
-        user_prompt = f"加下来我会提供一些paper和Github 仓库的摘要，摘要是{L2_text}。请你完成根据内容生成精简版的总结，每一个paper或者仓库只允许用1~2句话概括核心,你只需要输出最终的生成结果。"
+        user_prompt = f"加下来我会提供一些paper和Github 仓库的摘要，摘要是{L2_text}。请你完成根据内容生成精简版的总结，每一个paper或者仓库只允许用1~2句话概括核心,你只需要输出最终的生成结果, 你输出的最终结果不允许包含任何的markdown的小标题标记，包括加粗等"
 
         try:
             response = self.client.chat.completions.create(
