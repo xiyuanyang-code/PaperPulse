@@ -1,21 +1,25 @@
 import json
 import os
 import re
-
 from datetime import datetime
 from openai import OpenAI
 
+# Define prompts as global variables at the beginning of the file.
+# The variable names are in English, but the content is in Chinese.
+L2_SUMMARIZATION_PROMPT = """你是一个专业的内容总结机器人。请根据用户提供的文本，使用中文进行总结。"""
+L2_USER_PROMPT_TEMPLATE = """请使用中文总结以下内容，字数限制在 {length_limit} 字以内，并且仅输出最终结果。输出内容不允许包含任何Markdown小标题、加粗等标记，请以自然段形式呈现，并且要保证行文的逻辑性是顺畅的，不可以只是做翻译，每一个自然段的内容不要太短也不要太长。\n\n---\n\n{text}"""
+
+L1_SUMMARIZATION_PROMPT = """你是一个专业的内容总结机器人。请根据用户提供的文本，使用中文进行总结。"""
+L1_USER_PROMPT_TEMPLATE = """接下来我会提供一些paper和GitHub仓库的摘要，摘要内容为：\n\n{text}\n\n请你根据这些摘要，生成一个精简版的总结。要求每个paper或仓库包含：仓库的名称或者Paper的名称，并且在这之后用3到4句话凝练地概括其核心内容。你只需要输出最终的生成结果，并且该结果必须是一个Markdown无序列表，只允许有一层缩进，每个列表元素代表一个paper或仓库的介绍。输出中不允许包含任何Markdown小标题或加粗等标记。"""
 
 class AISummarizer:
     """
-    A class to read data from a JSON file and generate summaries using the Anthropic API.
+    A class to read data from a JSON file and generate summaries using the OpenAI API.
     """
 
     def __init__(self):
         """
-        Initializes the class and authenticates the Anthropic client.
-
-        :param data_file_path: The path to the JSON file.
+        Initializes the class and authenticates the OpenAI client.
         """
         self.time = datetime.now().strftime("%Y%m%d")
         self.data_file_path = os.path.join("./materials", (self.time + ".json"))
@@ -43,7 +47,7 @@ class AISummarizer:
 
     def _get_summary_from_anthropic(self, text, length_limit=400):
         """
-        Generates a text summary using the Anthropic API.
+        Generates a text summary using the OpenAI API.
 
         :param text: The original text to be summarized.
         :param length_limit: The maximum number of words for the summary.
@@ -53,16 +57,15 @@ class AISummarizer:
         clean_text = re.sub(r"</?p.*?>|\n{2,}", "\n", text)
         clean_text = re.sub(r"<[^>]*>", "", clean_text)
 
-        # Define system prompt
-        system_prompt = "You are a professional content summarization robot. Please summarize the text provided by the user in Chinese."
-
-        # Build user prompt
-        user_prompt = f"Please summarize the following content in Chinese, with the number of words limited to {length_limit} words:\n\n---\n\n{clean_text}, you only need to output the final answer.输出的最终结果不允许包含任何的markdown的小标题标记，包括加粗等，全部以自然段的形式呈现"
+        # Build user prompt using the template
+        user_prompt = L2_USER_PROMPT_TEMPLATE.format(
+            length_limit=length_limit, text=clean_text
+        )
 
         try:
             response = self.client.chat.completions.create(
                 messages=[
-                    {"role": "system", "content": system_prompt},
+                    {"role": "system", "content": L2_SUMMARIZATION_PROMPT},
                     {"role": "user", "content": user_prompt},
                 ],
                 model="gpt-4o-mini",
@@ -104,17 +107,16 @@ class AISummarizer:
         self.final_report = reports
 
     def generate_L1_report(self):
+        """
+        Generates a concise, high-level summary (L1 report).
+        """
         L2_text = "\n\n".join(self.final_report)
-        # Define system prompt
-        system_prompt = "You are a professional content summarization robot. Please summarize the text provided by the user in Chinese."
-
-        # Build user prompt
-        user_prompt = f"加下来我会提供一些paper和Github 仓库的摘要，摘要是{L2_text}。请你完成根据内容生成精简版的总结，每一个paper或者仓库只允许用1~2句话概括核心,你只需要输出最终的生成结果, 你输出的最终结果不允许包含任何的markdown的小标题标记，包括加粗等"
+        user_prompt = L1_USER_PROMPT_TEMPLATE.format(text=L2_text)
 
         try:
             response = self.client.chat.completions.create(
                 messages=[
-                    {"role": "system", "content": system_prompt},
+                    {"role": "system", "content": L1_SUMMARIZATION_PROMPT},
                     {"role": "user", "content": user_prompt},
                 ],
                 model="gpt-4o-mini",
@@ -123,35 +125,48 @@ class AISummarizer:
             )
             self.L1_summary = response.choices[0].message.content
         except Exception as e:
-            print(f"Failed to call Anthropic API: {e}")
-            return "Summary generation failed."
+            print(f"Failed to call OpenAI API: {e}")
+            self.L1_summary = "Summary generation failed."
 
     def save_L2_summary(self):
-        with open(self.data_file_path, "r") as file:
+        """
+        Saves the L2 summary to the JSON file.
+        """
+        with open(self.data_file_path, "r", encoding="utf-8") as file:
             data = json.load(file)
-            data["L2 Summary"] = self.final_report
-            file.close()
+        
+        data["L2 Summary"] = self.final_report
 
-        with open(self.data_file_path, "w") as file:
-            json.dump(data, file, indent=4, ensure_ascii=False, sort_keys=True)
+        with open(self.data_file_path, "w", encoding="utf-8") as file:
+            json.dump(data, file, indent=4, ensure_ascii=False)
 
     def save_L1_summary(self):
-        with open(self.data_file_path, "r") as file:
+        """
+        Saves the L1 summary to the JSON file.
+        """
+        with open(self.data_file_path, "r", encoding="utf-8") as file:
             data = json.load(file)
-            data["L1 Summary"] = self.L1_summary
-            file.close()
+        
+        data["L1 Summary"] = self.L1_summary
 
-        with open(self.data_file_path, "w") as file:
-            json.dump(data, file, indent=4, ensure_ascii=False, sort_keys=True)
+        with open(self.data_file_path, "w", encoding="utf-8") as file:
+            json.dump(data, file, indent=4, ensure_ascii=False)
 
     def run(self):
+        """
+        Main execution function to load data, generate, and save summaries.
+        """
         try:
             self.generate_full_report()
             self.save_L2_summary()
             self.generate_L1_report()
             self.save_L1_summary()
+        except FileNotFoundError as e:
+            print(f"Error: {e}. Please ensure the JSON data file exists.")
+        except ValueError as e:
+            print(f"Error: {e}. Please check the format of the JSON file.")
         except Exception as e:
-            print(f"Error: {e}")
+            print(f"An unexpected error occurred: {e}")
 
 
 if __name__ == "__main__":

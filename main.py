@@ -61,23 +61,24 @@ def _finish_report():
         data_gh = data["gh_trendings"]
         for content in data_gh:
             file.write(f"### Repo: {content["url"][19:]}\n\n")
-            file.write(f"url: {content["url"]}\n")
-            file.write(f"language: {content["language"]}\n")
-            file.write(f"\n{content["description"]}\n")
+            file.write(f"url: {content["url"]}\n\n")
+            file.write(f"language: {content["language"]}\n\n")
+            file.write(f"\n{content["description"]}\n\n\n")
 
         file.write(f"## Paper Trendings\n\n")
         data_paper = data["huggingface_papers"]
         for content in data_paper:
             file.write(f"### Paper: {content["Title"]}\n\n")
-            file.write(f"url: {content["PDF_Link"]}\n")
-            file.write(f"\n{content["Summary"]}\n")
+            file.write(f"url: {content["PDF_Link"]}\n\n")
+            file.write(f"\n{content["Summary"]}\n\n\n")
 
         return body_text, f"./materials/{time_stamp}.md"
 
 
 def _send_mail(body, path):
     mail_sender = EmailSender()
-    email_list = ["xiyuan__yang@outlook.com", "ruanmowen@sjtu.edu.cn"]
+    with open("./summary/config.json") as file:
+        email_list = json.load(file)
     for email in email_list:
         mail_sender.send_mail(
             email,
@@ -90,15 +91,15 @@ def _send_mail(body, path):
 def main():
 
     os.makedirs("./materials", exist_ok=True)
-    # file_path = os.path.abspath(f"./materials/{time_stamp}.json")
-    # with open(file_path, "w") as file:
-    #     # create the new file
-    #     json.dump({}, file)
-    #     file.close()
+    file_path = os.path.abspath(f"./materials/{time_stamp}.json")
+    with open(file_path, "w") as file:
+        # create the new file
+        json.dump({}, file)
+        file.close()
 
-    # print("Email Preparation Start!")
-    # crawling()
-    # _get_ai_info()
+    print("Email Preparation Start!")
+    crawling()
+    _get_ai_info()
     body, path = _finish_report()
     _send_mail(body, path)
 

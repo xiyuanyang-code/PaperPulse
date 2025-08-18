@@ -143,10 +143,10 @@ class HuggingFacePaperScraper:
                 arxiv_details = arxiv_scraper.get_paper_details(arxiv_id)
 
                 papers_list.append({
-                    "Title": title,
+                    "Title": str(title).replace("\n", " "),
                     "HF_Link": hf_link,
                     "Arxiv_Link": arxiv_link,
-                    "Summary": arxiv_details["Summary"],
+                    "Summary": str(arxiv_details["Summary"]).replace("\n", " "),
                     "PDF_Link": arxiv_details["PDF_Link"]
                 })
             except Exception as e:
