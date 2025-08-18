@@ -2,6 +2,7 @@ import os
 import json
 from crawler.paper import HuggingFacePaperScraper
 from crawler.gh_trending import GithubTrendingScraper
+from mail.sender import EmailSender
 from datetime import datetime
 
 
@@ -34,7 +35,8 @@ def _finish_report():
 
 
 def _send_mail():
-    pass
+    mail_sender = EmailSender()
+    mail_sender.send_mail("xiyuan__yang@outlook.com")
 
 
 def main():
@@ -54,4 +56,5 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    # main()
+    _send_mail()
