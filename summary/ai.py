@@ -25,7 +25,7 @@ class AISummarizer:
         self.data_file_path = os.path.join("./materials", (self.time + ".json"))
         self.client = OpenAI(
             api_key=os.environ.get("ANTHROPIC_API_KEY"),
-            base_url=os.environ.get("BASE_URL"),
+            base_url=os.environ.get("ANTHROPIC_BASE_URL"),
         )
         if not self.client.api_key:
             raise ValueError(

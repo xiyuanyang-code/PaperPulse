@@ -58,7 +58,7 @@ def _finish_report():
             file.write(f"{content}\n\n\n")
 
         file.write(f"## Repo Trendings\n\n")
-        data_gh = data["gh_trendings"]
+        data_gh = data.get("gh_trendings", [])
         for content in data_gh:
             file.write(f"### Repo: {content["url"][19:]}\n\n")
             file.write(f"url: {content["url"]}\n\n")
