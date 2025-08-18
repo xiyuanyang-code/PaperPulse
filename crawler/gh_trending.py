@@ -12,12 +12,13 @@ class GithubTrendingScraper:
     A scraper class to fetch trending repositories from GitHub
     and save their details, including README content, to a JSON file.
     """
-    def __init__(self, token=None):
+    def __init__(self):
         """
         Initializes the scraper with a GitHub instance.
         :param token: A GitHub Personal Access Token for higher API rate limits.
         """
-        self.github_instance = Github(token)
+        self.token = os.getenv("GITHUB_TOKEN")
+        self.github_instance = Github(self.token)
         self.output_dir = "materials"
         self.trending_url = "https://github.com/trending"
         self.headers = {
@@ -141,8 +142,3 @@ class GithubTrendingScraper:
         else:
             print("No repositories found or an error occurred. Skipping file save.")
 
-if __name__ == "__main__":
-    #! required
-    GH_TOKEN = os.getenv("GITHUB_TOKEN")
-    scraper = GithubTrendingScraper(GH_TOKEN)
-    scraper.run()

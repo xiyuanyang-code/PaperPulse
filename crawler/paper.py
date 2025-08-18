@@ -87,7 +87,6 @@ class HuggingFacePaperScraper:
         self.url = f"{self.HF_MIRROR_URL}/papers/date/{self.date_str}"
         self.link_convert = LinkConverter()
         self.arxiv_scraper = ArxivScraper()
-        print(f"Ready for URL: {self.url}")
 
     def _fetch_page_content(self) -> str | None:
         """
@@ -128,7 +127,6 @@ class HuggingFacePaperScraper:
 
         for container in papers_containers:
             try:
-                # 提取标题和链接
                 title_link_tag = container.find("a")
                 title = title_link_tag.get_text(strip=True)
                 # Ensure the link uses the mirror URL
@@ -152,7 +150,7 @@ class HuggingFacePaperScraper:
                     "PDF_Link": arxiv_details["PDF_Link"]
                 })
             except Exception as e:
-                print(f"解析单个论文条目时出错: {e}")
+                print(f"Error: {e}")
                 continue
 
         return papers_list
@@ -164,7 +162,7 @@ class HuggingFacePaperScraper:
         Args:
             data (list[dict]): The list of paper data.
         """
-        self.date_str = (datetime.now() - timedelta(days=1)).strftime("%Y%m%d")
+        self.date_str = (datetime.now()).strftime("%Y%m%d")
         if not new_data:
             print("No data")
             return
