@@ -91,6 +91,14 @@ def _send_mail(body, path):
     mail_sender = EmailSender()
     with open("./summary/config.json") as file:
         email_list = json.load(file)
+
+    email_list = [
+    "xiyuan__yang@outlook.com",
+    # "cny123222@sjtu.edu.cn",
+    # "ruanmowen@sjtu.edu.cn",
+    # "lisiyan@sjtu.edu.cn",
+    # "howard_xu@sjtu.edu.cn"
+]
     for email in email_list:
         mail_sender.send_mail(
             email,
