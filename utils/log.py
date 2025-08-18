@@ -31,12 +31,12 @@ def setup_logging_config():
     # If the logger is not configured, proceed with configuration.
     logger.setLevel(logging.INFO)  # Set the minimum logging level for the logger.
 
-    log_dir_home = Path.cwd() / "api_task" / "log"
+    log_dir_home = Path.cwd() / "log"
     log_file_path = None
 
     try:
         log_dir_home.mkdir(parents=True, exist_ok=True)
-        potential_log_file_path = log_dir_home / f"api_{generate_timestamp()}.log"
+        potential_log_file_path = log_dir_home / f"Email_{generate_timestamp()}.log"
 
         # Try to create or open the file to check for write permissions.
         with potential_log_file_path.open("a", encoding="utf-8") as f:
@@ -48,10 +48,10 @@ def setup_logging_config():
             file=sys.stderr,
         )
         tmp_dir = Path("/tmp")
-        log_file_path = str(tmp_dir / "gpu_monitor.log")
+        log_file_path = str(tmp_dir / "API.log")
         try:
             tmp_dir.mkdir(parents=True, exist_ok=True)
-            with (tmp_dir / "gpu_monitor.log").open("a", encoding="utf-8") as f:
+            with (tmp_dir / "API.log").open("a", encoding="utf-8") as f:
                 f.write("")  # Try again to ensure writability in /tmp.
         except OSError as e:
             print(

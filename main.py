@@ -1,8 +1,13 @@
 import os
+import sys
 import json
+
+sys.path.append(os.getcwd())
+
 from crawler.paper import HuggingFacePaperScraper
 from crawler.gh_trending import GithubTrendingScraper
 from mail.sender import EmailSender
+from summary.ai import AISummarizer
 from datetime import datetime
 
 
@@ -25,13 +30,20 @@ def crawling():
 
     print("Finish Scraping")
 
+
 def _get_ai_info():
     print("Calling AI")
-    pass
+    summary = AISummarizer()
+    summary.run()
+    print("Calling AI Ended")
 
 
 def _finish_report():
-    pass
+    time_stamp = datetime.now().strftime("%Y%m%d")
+    """generate the final readme.md file"""
+    with open(f"./materials/{time_stamp}.json", encoding="utf-8") as file:
+        data = json.load(file)
+        body_text = data["L1 Summary"]
 
 
 def _send_mail():
@@ -56,5 +68,4 @@ def main():
 
 
 if __name__ == "__main__":
-    # main()
-    _send_mail()
+    main()
