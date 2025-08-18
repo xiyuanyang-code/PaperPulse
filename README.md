@@ -72,6 +72,8 @@ python run.py
 
 - AI Summary
 
+See [example json](./example/20250818.json) and [example markdown](./example/20250818.md) for more info.
+
 > [!NOTE]
 > More to be added in the future, see [todo list](#todo-list) for more info. PRs and contributions are all welcome.
 
