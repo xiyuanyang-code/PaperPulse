@@ -37,7 +37,9 @@ def crawling():
             future.result(timeout=TIMEOUT_SECONDS)
             print("Github Trendings scraping finished successfully.")
         except TimeoutError:
-            print(f"Error: Github Trendings scraping timed out after {TIMEOUT_SECONDS} seconds.")
+            print(
+                f"Error: Github Trendings scraping timed out after {TIMEOUT_SECONDS} seconds."
+            )
             print("Skipping this task.")
         except Exception as e:
             print(f"Error: {e} in Github Trendings, skipping")
@@ -92,20 +94,15 @@ def _send_mail(body, path):
     with open("./summary/config.json") as file:
         email_list = json.load(file)
 
-    email_list = [
-    "xiyuan__yang@outlook.com",
-    # "cny123222@sjtu.edu.cn",
-    # "ruanmowen@sjtu.edu.cn",
-    # "lisiyan@sjtu.edu.cn",
-    # "howard_xu@sjtu.edu.cn"
-]
     for email in email_list:
+        print(f"Sending mail to {email}")
         mail_sender.send_mail(
             email,
             subject=f"AI Trending {time_stamp}",
             body=body,
             attach_local_file_path=path,
         )
+        print(f"Sending mail to {email} ended")
 
 
 def main():
@@ -126,4 +123,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    # _finish_report()
