@@ -2,12 +2,16 @@ import schedule
 import time
 import subprocess
 
+# * custom settings can be placed here
+SETTING_TIME = "23:00"
+
 
 def run_script():
     print("Time to get AI data!")
     try:
         result = subprocess.run(
             [
+                # !switch to your own command
                 "/GPFS/rhome/xiyuanyang/Agents/AutoEmailSender/.venv/bin/python",
                 "main.py",
             ],
@@ -15,7 +19,7 @@ def run_script():
             capture_output=True,
             text=True,
         )
-        print("Success!")
+        print("Success! The following output: ")
         print(result.stdout)
     except subprocess.CalledProcessError as e:
         print(f"Error: {e.returncode}")
@@ -25,11 +29,7 @@ def run_script():
 
 
 if __name__ == "__main__":
-    schedule.every().day.at("23:00").do(run_script)
-    count = 0
+    schedule.every().day.at(SETTING_TIME).do(run_script)
     while True:
         schedule.run_pending()
         time.sleep(5)
-        if count == 0:
-            print("I am not dead...")
-        count = (count + 1) % 10000

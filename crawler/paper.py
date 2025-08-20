@@ -1,9 +1,13 @@
 import requests
 import json
 import arxiv
+import sys
+import os
+sys.path.append(os.getcwd())
 
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
+from utils.log import setup_logging_config
 
 
 class LinkConverter:
@@ -42,6 +46,7 @@ class ArxivScraper:
         Returns:
             dict: A dictionary containing the summary and PDF link, or N/A.
         """
+        self.logger = setup_logging_config()
         try:
             client = arxiv.Client()
             search = arxiv.Search(id_list=[arxiv_id], max_results=1)
@@ -87,6 +92,7 @@ class HuggingFacePaperScraper:
         self.url = f"{self.HF_MIRROR_URL}/papers/date/{self.date_str}"
         self.link_convert = LinkConverter()
         self.arxiv_scraper = ArxivScraper()
+        self.logger = setup_logging_config()
 
     def _fetch_page_content(self) -> str | None:
         """
@@ -95,6 +101,7 @@ class HuggingFacePaperScraper:
         Returns:
             str | None: The HTML content as a string, or None if the request failed.
         """
+        print("Fetching Page content.")
         try:
             response = requests.get(self.url, headers=self.HEADERS, timeout=10)
             response.raise_for_status()
@@ -188,8 +195,11 @@ class HuggingFacePaperScraper:
         """
         html_content = self._fetch_page_content()
         if html_content:
+            print('Success! Parsing papers...')
             papers = self._parse_papers(html_content)
             self._save(papers)
+        else:
+            print("Error: html content is none.")
 
 
 if __name__ == "__main__":

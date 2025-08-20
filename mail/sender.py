@@ -21,16 +21,7 @@ from utils.log import setup_logging_config
 
 logger = setup_logging_config()
 
-CONFIG_PATH = "./config.json"
 
-
-def get_config_block(config_path, config_name: str) -> dict:
-    with open(config_path, "r", encoding="utf8") as file:
-        data = json.load(file)
-    for block in data:
-        if block.get("config_name") == config_name:
-            return block
-    raise ValueError(f"Config block with config_name '{config_name}' not found.")
 
 
 # feat: add adb pull command for pulling files into local for email.
@@ -123,7 +114,7 @@ class EmailSender:
         smtp_port (int): SMTP server port.
     """
 
-    def __init__(self, email_config_path: str = CONFIG_PATH):
+    def __init__(self, email_config_path: str):
         """
         Initialize the EmailSender by loading configuration from a JSON file.
 
@@ -131,17 +122,17 @@ class EmailSender:
             email_config_path (str): Path to the JSON config file.
         """
         self.email_config_path = email_config_path
+        with open(self.email_config_path, "r") as file:
+            self.config_data = json.load(file)
         self.sender_email, self.sender_password = self._get_usr_config()
         self.smtp_server, self.smtp_port = self._get_smtp_config()
         self.logger = setup_logging_config()
 
     def _get_usr_config(self) -> Tuple[str, str]:
-        block = get_config_block(CONFIG_PATH, "email")
-        return str(block["sender_email"]).strip(), str(block["sender_password"]).strip()
+        return str(self.config_data["sender_email"]).strip(), str(self.config_data["sender_password"]).strip()
 
     def _get_smtp_config(self) -> Tuple[str, int]:
-        block = get_config_block(CONFIG_PATH, "email")
-        return str(block["smtp_server"]).strip(), block["smtp_port"]
+        return str(self.config_data["smtp_server"]).strip(), self.config_data["smtp_port"]
 
     def _attach_file(self, msg: MIMEMultipart, file_path: str):
         """

@@ -5,8 +5,6 @@
 
 ## Installation
 
-### Cloning projects
-
 We recommend you to run this using `uv`.
 
 ```bash
@@ -18,32 +16,23 @@ source .venv/bin/activate
 
 ### Email Config settings
 
-Then, finish some config settings:
-
-- `./config.json`:
+For automatically sending emails, several settings for email sender is required. The default config path is in `./mail/config.json`.
 
 ```json
-[
-    {
-        "config_name": "email",
-        "sender_email": "your sender email",
-        "sender_password": "your password",
-        // switch to yours
-        "smtp_server": "mail.sjtu.edu.cn",
-        "smtp_port": 465
-    }
-]
+{
+    "recipient email list": [
+        "1@outlook.com",
+        "2@outlook.com"
+    ],
+    "config_name": "email",
+    "sender_email": "Your email",
+    "sender_password": "Your password",
+    "smtp_server": "smtp.gmail.com",
+    "smtp_port": 465
+}
 ```
 
-- `./summary/config.json`: emails to be sent to. (subscribers)
-
-```json
-[
-    "xiaohong@outlook.com",
-    "xiaolan@sjtu.edu.cn",
-    "xiaohuang@sjtu.edu.cn"
-]
-```
+You can copy the file from [`./mail/config_template.json`](./mail/config_template.json) as rename it to `config.json`.
 
 ### LLM Model Config Settings
 
@@ -54,6 +43,14 @@ export OPENAI_API_KEY="change to yours"
 export BASE_URL="change to yours"
 ```
 
+### Github Tokens Settings
+
+You can find them here: [Github Tokens](https://github.com/settings/tokens), and write them into your `~/.bashrc` or `~/.zshrc`. 
+
+```bash
+export GITHUB_TOKEN="Your GH tokens"
+```
+
 ## Usage
 
 ```bash
@@ -62,6 +59,15 @@ python main.py
 
 # scripts for running it everyday (23:00)
 python run.py
+```
+
+### Advanced Usage
+
+You can integrate it into your own workflow! It has been refactored as a module.
+
+```python
+reporter = AIReporter()
+reporter.run_report()
 ```
 
 ## Components

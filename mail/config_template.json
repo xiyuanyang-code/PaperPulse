@@ -1,0 +1,11 @@
+{
+    "recipient email list": [
+        "1@outlook.com",
+        "2@outlook.com"
+    ],
+    "config_name": "email",
+    "sender_email": "Your email",
+    "sender_password": "Your password",
+    "smtp_server": "smtp.gmail.com",
+    "smtp_port": 465
+}

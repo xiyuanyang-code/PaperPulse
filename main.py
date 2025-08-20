@@ -1,125 +1,162 @@
 import os
 import sys
 import json
-
+from concurrent.futures import ThreadPoolExecutor, TimeoutError
+from datetime import datetime
 sys.path.append(os.getcwd())
 
-from concurrent.futures import ThreadPoolExecutor, TimeoutError
 from crawler.paper import HuggingFacePaperScraper
 from crawler.gh_trending import GithubTrendingScraper
 from mail.sender import EmailSender
 from summary.ai import AISummarizer
-from datetime import datetime
 
-time_stamp = datetime.now().strftime("%Y%m%d")
+EMAIL_CONFIG_PATH = "./mail/config.json"
 
 
-def crawling():
-    paper_scraper = HuggingFacePaperScraper()
-    gh_scraper = GithubTrendingScraper()
-    print("Start Scraping")
+class AIReporter:
+    """
+    A class to automate the process of crawling, summarizing, and reporting
+    on AI papers and GitHub trends.
+    """
+    def __init__(self):
+        """
+        Initializes the AIReporter with necessary scraper and sender objects.
+        """
+        self.time_stamp = datetime.now().strftime("%Y%m%d")
+        self.materials_dir = "./materials"
+        self.json_file_path = os.path.join(self.materials_dir, f"{self.time_stamp}.json")
+        self.markdown_file_path = os.path.join(self.materials_dir, f"{self.time_stamp}.md")
 
-    # 运行 paper_scraper，不需要超时控制
-    try:
-        print("Start Scraping for Papers")
-        paper_scraper.run()
-    except Exception as e:
-        print(f"Error: {e} in Papers fetching, skipping")
+        # Initialize the tools used for the report generation
+        self.paper_scraper = HuggingFacePaperScraper()
+        self.gh_scraper = GithubTrendingScraper()
+        self.ai_summarizer = AISummarizer()
+        self.mail_sender = EmailSender(email_config_path=EMAIL_CONFIG_PATH)
+        
+        self.report_data = None
+        self.report_body = None
 
-    # 使用 ThreadPoolExecutor 控制 gh_scraper 的超时
-    print("Start Scraping for Github Trendings with timeout")
-    # 设置超时时间为 300 秒 (5 分钟)
-    TIMEOUT_SECONDS = 600
-    with ThreadPoolExecutor(max_workers=1) as executor:
-        future = executor.submit(gh_scraper.run)
+    def _crawling(self):
+        """
+        Scrapes data from Hugging Face for papers and GitHub for trending repositories.
+        """
+        print("Start Scraping")
+        
         try:
-            # 等待 future 完成，最多等待 TIMEOUT_SECONDS 秒
-            future.result(timeout=TIMEOUT_SECONDS)
-            print("Github Trendings scraping finished successfully.")
+            print("Start Scraping for Papers.")
+            self.paper_scraper.run()
+        except Exception as e:
+            print(f"Error: {e} in Papers fetching, skipping")
+
+        print("Start Scraping for Github Trendings.")
+        # Setting a timeout of 10 minutes (600 seconds) for the GitHub scraper
+        TIMEOUT_SECONDS = 600
+        try:
+            with ThreadPoolExecutor(max_workers=1) as executor:
+                future = executor.submit(self.gh_scraper.run)
+                future.result(timeout=TIMEOUT_SECONDS)
+                print("Github Trendings scraping finished successfully.")
         except TimeoutError:
-            print(
-                f"Error: Github Trendings scraping timed out after {TIMEOUT_SECONDS} seconds."
-            )
-            print("Skipping this task.")
+            print(f"Time out after {TIMEOUT_SECONDS} seconds. Skipping this task.")
         except Exception as e:
             print(f"Error: {e} in Github Trendings, skipping")
+            
+        print("Finish Scraping")
 
-    print("Finish Scraping")
+    def _get_ai_info(self):
+        """
+        Calls the AI summarizer to process the scraped data.
+        """
+        print("Calling AI")
+        self.ai_summarizer.run()
+        print("Calling AI Ended")
 
+    def _finish_report(self):
+        """
+        Generates the final markdown report from the JSON data.
+        """
+        print("Generating report files")
+        # Load the data from the JSON file created by the summarizer
+        try:
+            with open(self.json_file_path, "r", encoding="utf-8") as file:
+                self.report_data = json.load(file)
+        except FileNotFoundError:
+            print(f"Error: JSON file not found at {self.json_file_path}")
+            return False
 
-def _get_ai_info():
-    print("Calling AI")
-    summary = AISummarizer()
-    summary.run()
-    print("Calling AI Ended")
+        self.report_body = self.report_data["L1 Summary"]
 
+        # Generate the markdown file
+        with open(self.markdown_file_path, "w", encoding="utf-8") as file:
+            file.write(f"# Welcome to {self.time_stamp} AI Report\n\n")
+            file.write(f"{self.report_body}\n\n")
+            file.write("## Introduction\n\n")
+            
+            summary = self.report_data.get("L2 Summary", [])
+            for content in summary:
+                file.write(f"{content}\n\n\n")
 
-def _finish_report():
-    time_stamp = datetime.now().strftime("%Y%m%d")
-    """generate the final readme.md file"""
-    with open(f"./materials/{time_stamp}.json", encoding="utf-8") as file:
-        data = json.load(file)
-        body_text = data["L1 Summary"]
-        file.close()
+            file.write("## Repo Trendings\n\n")
+            data_gh = self.report_data.get("gh_trendings", [])
+            for content in data_gh:
+                file.write(f"### Repo: {content.get('url', '')[19:]}\n\n")
+                file.write(f"url: {content.get('url', '')}\n\n")
+                file.write(f"language: {content.get('language', 'N/A')}\n\n")
+                file.write(f"\n{content.get('description', '')}\n\n\n")
 
-    # generate a markdown file
-    with open(f"./materials/{time_stamp}.md", "w", encoding="utf-8") as file:
-        file.write(f"# Welcome to {time_stamp} AI Report\n\n")
-        file.write(f"{body_text}\n\n")
-        file.write(f"## Introduction\n\n")
-        summary = data["L2 Summary"]
-        for content in summary:
-            file.write(f"{content}\n\n\n")
+            file.write("## Paper Trendings\n\n")
+            data_paper = self.report_data.get("huggingface_papers", [])
+            for content in data_paper:
+                file.write(f"### Paper: {content.get('Title', 'N/A')}\n\n")
+                file.write(f"url: {content.get('PDF_Link', '')}\n\n")
+                file.write(f"\n{content.get('Summary', '')}\n\n\n")
+        
+        print("Report files generated successfully.")
+        return True
 
-        file.write(f"## Repo Trendings\n\n")
-        data_gh = data.get("gh_trendings", [])
-        for content in data_gh:
-            file.write(f"### Repo: {content["url"][19:]}\n\n")
-            file.write(f"url: {content["url"]}\n\n")
-            file.write(f"language: {content["language"]}\n\n")
-            file.write(f"\n{content["description"]}\n\n\n")
+    def _send_mail(self):
+        """
+        Sends the final report as an email with the markdown file as an attachment.
+        """
+        # Load the recipient list from the config file
+        try:
+            with open(EMAIL_CONFIG_PATH, "r") as file:
+                email_list = (json.load(file)).get("recipient email list")
+        except FileNotFoundError:
+            print("Error: Email config file not found.")
+            return
 
-        file.write(f"## Paper Trendings\n\n")
-        data_paper = data["huggingface_papers"]
-        for content in data_paper:
-            file.write(f"### Paper: {content["Title"]}\n\n")
-            file.write(f"url: {content["PDF_Link"]}\n\n")
-            file.write(f"\n{content["Summary"]}\n\n\n")
+        for email in email_list:
+            print(f"Sending mail to {email}")
+            self.mail_sender.send_mail(
+                email,
+                subject=f"AI Trending {self.time_stamp}",
+                body=self.report_body,
+                attach_local_file_path=self.markdown_file_path,
+            )
+            print(f"Sending mail to {email} ended")
 
-        return body_text, f"./materials/{time_stamp}.md"
+    def run_report(self):
+        """
+        The main method to run the entire report generation process.
+        """
+        print("Email Preparation Start!")
+        
+        os.makedirs(self.materials_dir, exist_ok=True)
+        with open(self.json_file_path, "w") as file:
+            json.dump({}, file)
 
-
-def _send_mail(body, path):
-    mail_sender = EmailSender()
-    with open("./summary/config.json") as file:
-        email_list = json.load(file)
-
-    for email in email_list:
-        print(f"Sending mail to {email}")
-        mail_sender.send_mail(
-            email,
-            subject=f"AI Trending {time_stamp}",
-            body=body,
-            attach_local_file_path=path,
-        )
-        print(f"Sending mail to {email} ended")
-
-
-def main():
-
-    os.makedirs("./materials", exist_ok=True)
-    file_path = os.path.abspath(f"./materials/{time_stamp}.json")
-    with open(file_path, "w") as file:
-        # create the new file
-        json.dump({}, file)
-        file.close()
-
-    print("Email Preparation Start!")
-    crawling()
-    _get_ai_info()
-    body, path = _finish_report()
-    _send_mail(body, path)
+        self._crawling()
+        self._get_ai_info()
+        
+        if self._finish_report():
+            self._send_mail()
+        else:
+            print("Report generation failed, skipping email step.")
+            
+        print("Email Preparation Done!")
 
 
 if __name__ == "__main__":
-    main()
+    reporter = AIReporter()
+    reporter.run_report()
