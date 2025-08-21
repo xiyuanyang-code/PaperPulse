@@ -150,11 +150,12 @@ class AIReporter:
         self._get_ai_info()
         
         if self._finish_report():
+            print("Email Preparation Done!")
             self._send_mail()
+            print("Sending mail...")
         else:
             print("Report generation failed, skipping email step.")
             
-        print("Email Preparation Done!")
 
 
 if __name__ == "__main__":

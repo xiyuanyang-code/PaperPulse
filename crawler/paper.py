@@ -54,12 +54,13 @@ class ArxivScraper:
 
             if results:
                 paper = results[0]
+                print(paper.summary)
                 return {"Summary": paper.summary, "PDF_Link": paper.pdf_url}
             else:
                 return {"Summary": "N/A", "PDF_Link": "N/A"}
 
         except Exception as e:
-            print(f"获取 arXiv 详情失败: {e}")
+            print(f"Error Getting arxiv: {e}")
             return {"Summary": "N/A", "PDF_Link": "N/A"}
 
 
@@ -90,6 +91,7 @@ class HuggingFacePaperScraper:
         )
         # Combine the mirror URL with the relative path to the papers page
         self.url = f"{self.HF_MIRROR_URL}/papers/date/{self.date_str}"
+        print(f"HuggingFace Page URL:{self.url}")
         self.link_convert = LinkConverter()
         self.arxiv_scraper = ArxivScraper()
         self.logger = setup_logging_config()
@@ -129,20 +131,22 @@ class HuggingFacePaperScraper:
         if not papers_containers:
             print("Error, no paper message")
             return papers_list
-
+        
+        print("Getting Paper messages")
         arxiv_scraper = ArxivScraper()
-
+        print(f"Paper numbers: {len(papers_containers)}")
         for container in papers_containers:
             try:
                 title_link_tag = container.find("a")
-                title = title_link_tag.get_text(strip=True)
+                title = title_link_tag.get_text(strip=True).replace("\n", "")
+                print(title)
                 # Ensure the link uses the mirror URL
                 relative_link = title_link_tag['href']
                 hf_link = f"{self.HF_MIRROR_URL}{relative_link}"
                 
                 # Convert the Hugging Face link to an arXiv link
                 arxiv_link = LinkConverter.to_arxiv(hf_link)
-                
+                print(arxiv_link)
                 # Extract arXiv ID
                 arxiv_id = arxiv_link.split('/')[-1]
 
@@ -150,10 +154,10 @@ class HuggingFacePaperScraper:
                 arxiv_details = arxiv_scraper.get_paper_details(arxiv_id)
 
                 papers_list.append({
-                    "Title": str(title).replace("\n", " "),
+                    "Title": str(title).replace("\n", ""),
                     "HF_Link": hf_link,
                     "Arxiv_Link": arxiv_link,
-                    "Summary": str(arxiv_details["Summary"]).replace("\n", " "),
+                    "Summary": str(arxiv_details["Summary"]).replace("\n", ""),
                     "PDF_Link": arxiv_details["PDF_Link"]
                 })
             except Exception as e:

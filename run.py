@@ -3,7 +3,7 @@ import time
 import subprocess
 
 # * custom settings can be placed here
-SETTING_TIME = "23:00"
+SETTING_TIME = "21:00"
 
 
 def run_script():

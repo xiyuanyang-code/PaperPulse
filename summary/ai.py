@@ -157,8 +157,11 @@ class AISummarizer:
         Main execution function to load data, generate, and save summaries.
         """
         try:
+            print("Generate Full Report")
             self.generate_full_report()
             self.save_L2_summary()
+
+            print("Generate L1 Summary")
             self.generate_L1_report()
             self.save_L1_summary()
         except FileNotFoundError as e:
