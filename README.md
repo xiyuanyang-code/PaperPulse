@@ -1,4 +1,6 @@
-# AutoMail Sender
+# PaperPulse
+
+Paper Pulse: automatic email sender, pushing trending papers and Github repos with AI summary.
 
 > [!IMPORTANT]
 > This project has been running! Contact with the author ([email](mailto:yangxiyuan@sjtu.edu.cn)) for subscribing.
@@ -8,8 +10,8 @@
 We recommend you to run this using `uv`.
 
 ```bash
-git clone https://github.com/xiyuanyang-code/AutoEmailSender
-cd AutoEmailSender
+git clone https://github.com/xiyuanyang-code/PaperPulse
+cd PaperPulse
 uv sync
 source .venv/bin/activate
 ```
@@ -84,8 +86,6 @@ See [example json](./example/20250818.json) and [example markdown](./example/202
 > More to be added in the future, see [todo list](#todo-list) for more info. PRs and contributions are all welcome.
 
 ## Todo List
-
-- Add scraper for programming language learning. (Maybe Rust to be the first!)
 
 - Optimizing prompts for better summary contents.
 
