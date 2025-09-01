@@ -186,6 +186,7 @@ class EmailSender:
         body: str = "hello world, just for fun!",
         attach_local_file_path: Optional[str | List[str]] = None,
         attach_android_file_path: Optional[str | List[str]] = None,
+        retries = 5,
     ):
         """
         Send an email with optional attachments.
@@ -237,19 +238,22 @@ class EmailSender:
                 self._attach_file(msg, file_path)
 
         # --- Send the email ---
-        try:
-            with smtplib.SMTP_SSL(self.smtp_server, self.smtp_port) as server:
-                server.login(self.sender_email, self.sender_password)
-                server.send_message(msg)
-            self.logger.info("Email sent successfully!")
-            self.logger.info(
-                f"Message sent from {self.sender_email} to {receiver_email}"
-            )
-        except smtplib.SMTPAuthenticationError:
-            self.logger.error("Failed to send email!")
-            self.logger.error(
-                "Authentication failed: Please check if the sender email address and password/authorization code are correct."
-            )
-        except Exception as e:
-            self.logger.error("Failed to send email!")
-            self.logger.error(f"An error occurred: {e}")
+        for index in range(retries):
+            try:
+                print(f"Retries in {index}")
+                with smtplib.SMTP_SSL(self.smtp_server, self.smtp_port) as server:
+                    server.login(self.sender_email, self.sender_password)
+                    server.send_message(msg)
+                self.logger.info("Email sent successfully!")
+                self.logger.info(
+                    f"Message sent from {self.sender_email} to {receiver_email}"
+                )
+                return
+            except smtplib.SMTPAuthenticationError:
+                self.logger.error("Failed to send email!")
+                self.logger.error(
+                    "Authentication failed: Please check if the sender email address and password/authorization code are correct."
+                )
+            except Exception as e:
+                self.logger.error("Failed to send email!")
+                self.logger.error(f"An error occurred: {e}")

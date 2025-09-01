@@ -140,7 +140,6 @@ class AIReporter:
         """
         The main method to run the entire report generation process.
         """
-        print("Email Preparation Start!")
         
         os.makedirs(self.materials_dir, exist_ok=True)
         with open(self.json_file_path, "w") as file:
@@ -150,11 +149,13 @@ class AIReporter:
         self._get_ai_info()
         
         if self._finish_report():
-            print("Email Preparation Done!")
-            self._send_mail()
             print("Sending mail...")
+            self._send_mail()
+            print("Email Sending Done!")
         else:
             print("Report generation failed, skipping email step.")
+
+        print("Finished")
             
 
 
