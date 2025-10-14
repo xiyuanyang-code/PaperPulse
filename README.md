@@ -97,5 +97,5 @@ See [example json](./example/20250818.json) and [example markdown](./example/202
 ## Todo List
 
 - Optimizing prompts for better summary contents.
-
 - Make the generated markdown file prettier.
+- Deploy Github Pages for the scraping results.
