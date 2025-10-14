@@ -3,12 +3,15 @@ import time
 import subprocess
 import datetime
 import sys
+from tqdm import tqdm
 
 # * custom settings can be placed here
 SETTING_TIME = "21:00"
 
 
-def get_progress_info(target_time_str):
+# --- Function to get time remaining (still needed for tqdm's 'total') ---
+def get_time_remaining(target_time_str):
+    """Calculates the seconds remaining until the next scheduled run."""
     now = datetime.datetime.now()
     target_time = datetime.datetime.strptime(target_time_str, "%H:%M").time()
     next_run_dt = datetime.datetime.combine(now.date(), target_time)
@@ -16,40 +19,18 @@ def get_progress_info(target_time_str):
         next_run_dt += datetime.timedelta(days=1)
 
     time_remaining = next_run_dt - now
-    total_seconds = int(time_remaining.total_seconds())
-    hours, remainder = divmod(total_seconds, 3600)
-    minutes, seconds = divmod(remainder, 60)
-    countdown_str = f"{hours:02d}:{minutes:02d}:{seconds:02d}"
-
-    TOTAL_DAY_SECONDS = 24 * 3600
-    current_seconds = now.hour * 3600 + now.minute * 60 + now.second
-    progress_percent = (current_seconds / TOTAL_DAY_SECONDS) * 100
-
-    return countdown_str, progress_percent
+    return int(time_remaining.total_seconds())
 
 
-def update_terminal_display(countdown_str, progress_percent):
-
-    BAR_LENGTH = 30
-    filled_length = int(BAR_LENGTH * progress_percent // 100)
-    bar = "█" * filled_length + "-" * (BAR_LENGTH - filled_length)
-
-    output = (
-        f"⏳ Next Run at {SETTING_TIME} | "
-        f"Countdown: {countdown_str} | "
-        f"Progress: [{bar}] {progress_percent:.2f}%  "
-    )
-
-    sys.stdout.write(output + "\r")
-    sys.stdout.flush()
-
-
+# --- run_script remains the same ---
 def run_script():
+    # Use sys.stdout.write to clear the tqdm bar line before printing
+    # This prevents the task output from overwriting the progress bar visually
     sys.stdout.write("\r" + " " * 150 + "\r")
     sys.stdout.flush()
 
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    print("-" * 50)
+    print("\n" + "-" * 50)
     print(f"🤖 STARTING TASK: main.py | Time: {timestamp}")
     print("-" * 50)
 
@@ -88,11 +69,26 @@ if __name__ == "__main__":
         print(f"✅ PaperPulse Scheduler started. Target time: {SETTING_TIME}")
         print("--------------------------------------------------")
 
-        while True:
-            schedule.run_pending()
-            countdown, percent = get_progress_info(SETTING_TIME)
-            update_terminal_display(countdown, percent)
-            time.sleep(1)
+        # Total seconds in a day for the progress bar's range
+        TOTAL_DAY_SECONDS = 24 * 3600
+
+        with tqdm(
+            total=TOTAL_DAY_SECONDS,
+            unit="s",
+            bar_format="{desc}: |{bar}| {n_fmt}/{total_fmt} [{remaining}]",
+        ) as pbar:
+
+            while True:
+                schedule.run_pending()
+                seconds_remaining = get_time_remaining(SETTING_TIME)
+                seconds_elapsed_since_last_run = TOTAL_DAY_SECONDS - seconds_remaining
+
+                pbar.n = seconds_elapsed_since_last_run
+                pbar.set_description(f"Next Run at {SETTING_TIME}")
+                pbar.refresh()
+
+                # The scheduler now checks for tasks and updates the bar every 5 seconds.
+                time.sleep(1)
 
     except KeyboardInterrupt:
         print("\n\n👋 PaperPulse Scheduler Stopped.")
