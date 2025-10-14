@@ -1,6 +1,6 @@
 # PaperPulse
 
-Paper Pulse: automatic email sender, pushing trending papers and Github repos with AI summary.
+PaperPulse: Your Daily Latest Paper Acquisition Assistant, automatically pushing trending papers and Github repos with AI summary.
 
 > [!IMPORTANT]
 > This project has been running! Contact with the author ([email](mailto:yangxiyuan@sjtu.edu.cn)) for subscribing.
