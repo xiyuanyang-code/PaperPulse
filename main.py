@@ -134,10 +134,15 @@ class AIReporter:
             print("Error: Email config file not found.")
             return
 
+        with open(self.markdown_file_path, "r", encoding="utf-8") as file:
+            markdown_content = file.read()
+
+        send_body = markdown_content
+
         self.mail_sender.send(
             email_list,
             subject=f"PaperPulse for {self.time_stamp}: Your Daily Latest Paper Acquisition Assistant",
-            body=self.report_body,
+            body=send_body,
         )
 
     def run_report(self):

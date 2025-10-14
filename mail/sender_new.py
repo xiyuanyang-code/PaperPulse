@@ -58,6 +58,13 @@ class EmailSender:
             mail_lists = [mail_lists]
         all_response = []
         mail_length = len(mail_lists)
+
+        # wrap with html
+        body_new = body
+        body_new = body_new.replace("\n", "<br>")
+        body_new = "<p>" + body_new + "</p>"
+        
+
         for mail in tqdm(mail_lists, total=mail_length):
             headers = {"Authorization": f"Bearer {self.token}"}
             params = {
@@ -65,7 +72,7 @@ class EmailSender:
                 "prospect_id": 0,
                 "template_id": self.template_id,
                 "subject": subject,
-                "content": body,
+                "content": body_new,
                 "sender": self.sender_mail,
                 "reply_email": self.sender_mail,
             }
