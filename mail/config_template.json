@@ -1,11 +1,11 @@
 {
     "recipient email list": [
-        "1@outlook.com",
-        "2@outlook.com"
+        "test@test.cn"
     ],
+    "sender_mail": "your sender email",
     "config_name": "email",
-    "sender_email": "Your email",
-    "sender_password": "Your password",
-    "smtp_server": "smtp.gmail.com",
+    "client_id": "your client id",
+    "client_secret": "your client secret",
+    "template_id": 100010,
     "smtp_port": 465
 }

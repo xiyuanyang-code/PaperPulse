@@ -18,18 +18,18 @@ source .venv/bin/activate
 
 ### Email Config settings
 
-For automatically sending emails, several settings for email sender is required. The default config path is in `./mail/config.json`.
+For automatically sending emails, several settings for email sender is required. The default config path is in `./mail/config.json`. For author's own settings, we recommend you to use [GeekSend](https://app.geeksend.com/home).
 
 ```json
 {
     "recipient email list": [
-        "1@outlook.com",
-        "2@outlook.com"
+        "test@test.cn"
     ],
+    "sender_mail": "your sender email",
     "config_name": "email",
-    "sender_email": "Your email",
-    "sender_password": "Your password",
-    "smtp_server": "smtp.gmail.com",
+    "client_id": "your client id",
+    "client_secret": "your client secret",
+    "template_id": 100010,
     "smtp_port": 465
 }
 ```
@@ -59,8 +59,17 @@ export GITHUB_TOKEN="Your GH tokens"
 # for one single action
 python main.py
 
-# scripts for running it everyday (23:00)
+# scripts for running it everyday
+# setting custom sending time is available. recommand for using this!
 python run.py
+```
+
+Demo:
+
+```
+✅ PaperPulse Scheduler started. Target time: 21:00
+--------------------------------------------------
+⏳ Next Run at 21:00 | Countdown: 01:03:30 | Progress: [████████████████████████------] 83.09% 
 ```
 
 ### Advanced Usage

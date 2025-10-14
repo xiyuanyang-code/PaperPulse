@@ -1,16 +1,19 @@
 import os
 import sys
 import json
+import dotenv
 from concurrent.futures import ThreadPoolExecutor, TimeoutError
 from datetime import datetime
+
 sys.path.append(os.getcwd())
 
 from crawler.paper import HuggingFacePaperScraper
 from crawler.gh_trending import GithubTrendingScraper
-from mail.sender import EmailSender
+from mail.sender_new import EmailSender
 from summary.ai import AISummarizer
 
 EMAIL_CONFIG_PATH = "./mail/config.json"
+dotenv.load_dotenv()
 
 
 class AIReporter:
@@ -18,21 +21,26 @@ class AIReporter:
     A class to automate the process of crawling, summarizing, and reporting
     on AI papers and GitHub trends.
     """
+
     def __init__(self):
         """
         Initializes the AIReporter with necessary scraper and sender objects.
         """
         self.time_stamp = datetime.now().strftime("%Y%m%d")
         self.materials_dir = "./materials"
-        self.json_file_path = os.path.join(self.materials_dir, f"{self.time_stamp}.json")
-        self.markdown_file_path = os.path.join(self.materials_dir, f"{self.time_stamp}.md")
+        self.json_file_path = os.path.join(
+            self.materials_dir, f"{self.time_stamp}.json"
+        )
+        self.markdown_file_path = os.path.join(
+            self.materials_dir, f"{self.time_stamp}.md"
+        )
 
         # Initialize the tools used for the report generation
         self.paper_scraper = HuggingFacePaperScraper()
         self.gh_scraper = GithubTrendingScraper()
         self.ai_summarizer = AISummarizer()
         self.mail_sender = EmailSender(email_config_path=EMAIL_CONFIG_PATH)
-        
+
         self.report_data = None
         self.report_body = None
 
@@ -41,7 +49,7 @@ class AIReporter:
         Scrapes data from Hugging Face for papers and GitHub for trending repositories.
         """
         print("Start Scraping")
-        
+
         try:
             print("Start Scraping for Papers.")
             self.paper_scraper.run()
@@ -60,7 +68,7 @@ class AIReporter:
             print(f"Time out after {TIMEOUT_SECONDS} seconds. Skipping this task.")
         except Exception as e:
             print(f"Error: {e} in Github Trendings, skipping")
-            
+
         print("Finish Scraping")
 
     def _get_ai_info(self):
@@ -91,7 +99,7 @@ class AIReporter:
             file.write(f"# Welcome to {self.time_stamp} AI Report\n\n")
             file.write(f"{self.report_body}\n\n")
             file.write("## Introduction\n\n")
-            
+
             summary = self.report_data.get("L2 Summary", [])
             for content in summary:
                 file.write(f"{content}\n\n\n")
@@ -110,7 +118,7 @@ class AIReporter:
                 file.write(f"### Paper: {content.get('Title', 'N/A')}\n\n")
                 file.write(f"url: {content.get('PDF_Link', '')}\n\n")
                 file.write(f"\n{content.get('Summary', '')}\n\n\n")
-        
+
         print("Report files generated successfully.")
         return True
 
@@ -126,37 +134,37 @@ class AIReporter:
             print("Error: Email config file not found.")
             return
 
-        for email in email_list:
-            print(f"Sending mail to {email}")
-            self.mail_sender.send_mail(
-                email,
-                subject=f"AI Trending {self.time_stamp}",
-                body=self.report_body,
-                attach_local_file_path=self.markdown_file_path,
-            )
-            print(f"Sending mail to {email} ended")
+        self.mail_sender.send(
+            email_list,
+            subject=f"PaperPulse for {self.time_stamp}: Your Daily Latest Paper Acquisition Assistant",
+            body=self.report_body,
+        )
 
     def run_report(self):
         """
         The main method to run the entire report generation process.
         """
-        
         os.makedirs(self.materials_dir, exist_ok=True)
-        with open(self.json_file_path, "w") as file:
-            json.dump({}, file)
 
-        self._crawling()
-        self._get_ai_info()
-        
+        if not os.path.exists(
+            os.path.join(self.materials_dir, f"{self.time_stamp}.md")
+        ) or (
+            not os.path.exists(
+                os.path.join(self.materials_dir, f"{self.time_stamp}.json")
+            )
+        ):
+            with open(self.json_file_path, "w") as file:
+                json.dump({}, file)
+
+            self._crawling()
+            self._get_ai_info()
+
         if self._finish_report():
             print("Sending mail...")
             self._send_mail()
             print("Email Sending Done!")
         else:
             print("Report generation failed, skipping email step.")
-
-        print("Finished")
-            
 
 
 if __name__ == "__main__":
