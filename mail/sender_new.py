@@ -77,12 +77,3 @@ class EmailSender:
             all_response.append(res)
 
         print(f"Result: {json.dumps(all_response,indent=2,ensure_ascii=False)}")
-
-
-if __name__ == "__main__":
-    sender = EmailSender(email_config_path="./mail/config.json")
-    # for testing only
-    sender.send(
-        subject="PaperPulse: Your Daily Latest Paper Acquisition Assistant",
-        body="Hello\nCan you hear me?",
-    )
