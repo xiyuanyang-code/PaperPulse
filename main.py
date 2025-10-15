@@ -178,5 +178,5 @@ class AIReporter:
 
 
 if __name__ == "__main__":
-    reporter = AIReporter(time_stamp="20251014")
+    reporter = AIReporter()
     reporter.run_report()
