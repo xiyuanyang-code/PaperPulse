@@ -10,6 +10,7 @@ sys.path.append(os.getcwd())
 from crawler.paper import HuggingFacePaperScraper
 from crawler.gh_trending import GithubTrendingScraper
 from mail.sender_new import EmailSender
+from mail.generate_news_letter import NewsLetterGenerator
 from summary.ai import AISummarizer
 
 EMAIL_CONFIG_PATH = "./mail/config.json"
@@ -22,11 +23,13 @@ class AIReporter:
     on AI papers and GitHub trends.
     """
 
-    def __init__(self):
+    def __init__(self, time_stamp: str = None):
         """
         Initializes the AIReporter with necessary scraper and sender objects.
         """
-        self.time_stamp = datetime.now().strftime("%Y%m%d")
+        self.time_stamp = (
+            datetime.now().strftime("%Y%m%d") if time_stamp is None else time_stamp
+        )
         self.materials_dir = "./materials"
         self.json_file_path = os.path.join(
             self.materials_dir, f"{self.time_stamp}.json"
@@ -34,11 +37,15 @@ class AIReporter:
         self.markdown_file_path = os.path.join(
             self.materials_dir, f"{self.time_stamp}.md"
         )
+        self.html_file_path = os.path.join(
+            self.materials_dir, f"{self.time_stamp}.html"
+        )
 
         # Initialize the tools used for the report generation
         self.paper_scraper = HuggingFacePaperScraper()
         self.gh_scraper = GithubTrendingScraper()
         self.ai_summarizer = AISummarizer()
+        self.news_generator = NewsLetterGenerator(time_stamp=self.time_stamp)
         self.mail_sender = EmailSender(email_config_path=EMAIL_CONFIG_PATH)
 
         self.report_data = None
@@ -119,6 +126,8 @@ class AIReporter:
                 file.write(f"url: {content.get('PDF_Link', '')}\n\n")
                 file.write(f"\n{content.get('Summary', '')}\n\n\n")
 
+        # generate html file
+        self.news_generator.generate_article_html()
         print("Report files generated successfully.")
         return True
 
@@ -134,10 +143,10 @@ class AIReporter:
             print("Error: Email config file not found.")
             return
 
-        with open(self.markdown_file_path, "r", encoding="utf-8") as file:
-            markdown_content = file.read()
+        with open(self.html_file_path, "r", encoding="utf-8") as file:
+            send_body = file.read()
 
-        send_body = markdown_content
+        send_body = send_body.replace("\n", "<div>")
 
         self.mail_sender.send(
             email_list,
@@ -152,11 +161,7 @@ class AIReporter:
         os.makedirs(self.materials_dir, exist_ok=True)
 
         if not os.path.exists(
-            os.path.join(self.materials_dir, f"{self.time_stamp}.md")
-        ) or (
-            not os.path.exists(
-                os.path.join(self.materials_dir, f"{self.time_stamp}.json")
-            )
+            os.path.join(self.materials_dir, f"{self.time_stamp}.json")
         ):
             with open(self.json_file_path, "w") as file:
                 json.dump({}, file)
@@ -173,5 +178,5 @@ class AIReporter:
 
 
 if __name__ == "__main__":
-    reporter = AIReporter()
+    reporter = AIReporter(time_stamp="20251014")
     reporter.run_report()

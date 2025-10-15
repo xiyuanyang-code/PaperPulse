@@ -16,8 +16,8 @@ class NewsLetterGenerator:
         self.template_file_path = template_file_path
         self.output_dir = output_dir
         self.global_config = {
-            "PaperPulse: Your Daily Latest Paper Acquisition Assistant": "",
-            "📅 Date: XXXX-XX-XX": "",
+            "PaperPulse: Your Daily Latest Paper Acquisition Assistant": f"PaperPulse for {self.time_stamp}: Your Daily Latest Paper Acquisition Assistant",
+            "📅 Date: XXXX-XX-XX": f"📅 Date: {self.time_stamp}",
         }
 
         # write and create some files
@@ -41,6 +41,7 @@ class NewsLetterGenerator:
             file_data = json.load(file)
             paper_data = file_data["huggingface_papers"]
             l2_summary_data = file_data["L2 Summary"]
+            l1_summary_data = file_data["L1 Summary"]
 
         length_of_data = len(paper_data)
         for index, paper_info in tqdm(enumerate(paper_data), total=length_of_data):
@@ -54,6 +55,9 @@ class NewsLetterGenerator:
         final_html = template_content
         for key, value in self.global_config.items():
             final_html = final_html.replace(key, value)
+            
+        # replace tldr
+        final_html = final_html.replace("[GLOBAL_TLDR_SUMMARY]", l1_summary_data)
 
         START_MARKER = "<!-- START: 论文解读块模板 - Python脚本将填充此位置 -->"
         END_MARKER = "<!-- END: 论文解读块模板 -->"
