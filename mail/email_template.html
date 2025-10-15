@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PaperPulse</title>
+    <style type="text/css">
+        /* 确保在所有客户端中都能正确显示 */
+        body,
+        table,
+        td,
+        a {
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+        }
+
+        table,
+        td {
+            mso-table-lspace: 0pt;
+            mso-table-rspace: 0pt;
+        }
+
+        img {
+            -ms-interpolation-mode: bicubic;
+            border: 0;
+            height: auto;
+            line-height: 100%;
+            outline: none;
+            text-decoration: none;
+        }
+
+        a[x-apple-data-detectors] {
+            color: inherit !important;
+            text-decoration: none !important;
+            font-size: inherit !important;
+            font-family: inherit !important;
+            font-weight: inherit !important;
+            line-height: inherit !important;
+        }
+
+        /* 响应式样式 */
+        @media screen and (max-width: 600px) {
+            .full-width {
+                width: 100% !important;
+            }
+
+            .content-padding {
+                padding: 15px !important;
+            }
+
+            .header-text {
+                font-size: 24px !important;
+            }
+        }
+    </style>
+</head>
+
+<body style="margin: 0; padding: 0; background-color: #f4f4f4;">
+
+    <!-- 外部包裹表格 (居中和背景) -->
+    <table border="0" cellpadding="0" cellspacing="0" width="100%"
+        style="table-layout: fixed; background-color: #f4f4f4;">
+        <tr>
+            <td align="center" style="padding: 20px 0;">
+                <!-- 内部内容容器 (最大宽度 600px) -->
+                <table border="0" cellpadding="0" cellspacing="0" width="600" class="full-width"
+                    style="border-collapse: collapse; max-width: 600px; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);">
+
+                    <!-- 1. 顶部 Logo/刊头区 (蓝色背景) -->
+                    <tr>
+                        <td align="center"
+                            style="padding: 30px 20px 10px 20px; background-color: #3b82f6; border-top-left-radius: 8px; border-top-right-radius: 8px;">
+                            <h1 class="header-text"
+                                style="margin: 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 28px; color: #ffffff; font-weight: 700;">
+                                💡 PaperPulse: Your Daily Latest Paper Acquisition Assistant.
+                            </h1>
+                            <p
+                                style="margin: 5px 0 0 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 14px; color: #dbeafe;">
+                                📅 Date: XXXX-XX-XX
+                            </p>
+                        </td>
+                    </tr>
+
+                    <!-- 2. 主要内容区 (多篇文章块) -->
+                    <tr>
+                        <td style="padding: 20px 30px;" class="content-padding">
+
+                            <p
+                                style="margin: 0 0 20px 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 16px; color: #475569; line-height: 24px;">
+                                Today's Arxiv and HuggingFace Trending Papers.
+                            </p>
+
+                            <!-- INSERT_ARTICLES_HERE -->
+                            <!-- START: 论文解读块模板 - Python脚本将填充此位置 -->
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%"
+                                style="border-collapse: collapse; margin-bottom: 25px; border: 1px solid #93c5fd; border-radius: 6px;">
+                                <tr>
+                                    <td style="padding: 20px 20px; background-color: #eff6ff;">
+                                        <!-- 论文标题 (深蓝) -->
+                                        <h2
+                                            style="margin: 0 0 15px 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 22px; color: #1e3a8a; font-weight: 700; line-height: 30px;">
+                                            [PAPER_TITLE]
+                                        </h2>
+
+                                        <!-- 英文摘要 -->
+                                        <h3
+                                            style="margin: 0 0 5px 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 16px; color: #3b82f6; font-weight: 600;">
+                                            English Abstract:
+                                        </h3>
+                                        <p
+                                            style="margin: 0 0 15px 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 16px; color: #475569; line-height: 24px;">
+                                            [ENGLISH_ABSTRACT]
+                                        </p>
+
+                                        <!-- 中文简略概括 -->
+                                        <h3
+                                            style="margin: 0 0 5px 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 16px; color: #3b82f6; font-weight: 600;">
+                                            中文简析:
+                                        </h3>
+                                        <p
+                                            style="margin: 0 0 20px 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 16px; color: #475569; line-height: 24px;">
+                                            [CHINESE_SUMMARY]
+                                        </p>
+
+                                        <!-- 链接按钮 (居中) -->
+                                        <!-- 使用 align="center" 确保在所有邮件客户端中居中 -->
+                                        <table border="0" cellpadding="0" cellspacing="0" align="center"
+                                            style="margin: auto;">
+                                            <tr>
+                                                <td align="center" style="border-radius: 4px;" bgcolor="#3b82f6">
+                                                    <a href="[ARTICLE_LINK]" target="_blank"
+                                                        style="font-size: 15px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #ffffff; text-decoration: none; border-radius: 4px; padding: 10px 20px; border: 1px solid #3b82f6; display: inline-block; font-weight: 600;">
+                                                        Read Full Paper... &rarr;
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                            <!-- END: 论文解读块模板 -->
+
+                        </td>
+                    </tr>
+
+                    <!-- 3. 页脚区 -->
+                    <tr>
+                        <td align="center"
+                            style="padding: 20px 30px; background-color: #e2e8f0; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;">
+                            <p>
+                                &copy; 2025 Xiyuan Yang, All Rights Reserved.
+                            </p>
+                            <p
+                                style="margin: 5px 0 0 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 12px; color: #64748b;">
+                                Contact us: yangxiyuan@sjtu.edu.cn
+                            </p>
+                        </td>
+                    </tr>
+
+                </table>
+            </td>
+        </tr>
+    </table>
+
+</body>
+
+</html>
